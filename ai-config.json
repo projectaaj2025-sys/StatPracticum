@@ -1,3 +1,4 @@
 {
-  "apiBase": "https://statpracticum-ai.projectaaj2025.workers.dev"
+  "apiBase": "https://statpracticum-ai.projectaaj2025.workers.dev",
+  "model": "gemini-flash-lite-latest"
 }
