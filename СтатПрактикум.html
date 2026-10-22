@@ -5481,47 +5481,81 @@ function aiGeminiUrl(settings, stream) {
 
 let aiSiteAvailable = false;
 let aiSiteApiBase = '';
+let aiSiteConfiguredModel = 'gemini-flash-lite-latest';
+let aiSiteDiagnostic = '';
 function aiSiteApi(path) { return (aiSiteApiBase || '') + path }
 function aiUsingSite(s) {
     return aiSiteAvailable && s.aiKeySource === 'site' && s.aiProvider === 'gemini'
 }
 function aiHasKey(s) { return s.aiKeySource === 'site' ? aiUsingSite(s) : !!s.aiApiKey }
 
-/* A static/offline copy has no server key. Never infer one from the HTML. */
+/* A static/offline copy never embeds a key; the published site uses its configured Worker. */
 async function aiDetectSiteKey() {
     if (typeof fetch !== 'function') return;
     try {
-        // GitHub Pages is static: this public file contains only the Worker URL, never a key.
+        let settings = null;
         try {
-            const settingsResponse = await fetch(new URL('./ai-config.json', location.href), {cache: 'no-store'});
-            if (settingsResponse.ok) {
-                const settings = await settingsResponse.json();
-                if (settings && typeof settings.apiBase === 'string' && settings.apiBase.trim()) {
-                    const apiUrl = new URL(settings.apiBase.trim());
-                    if (apiUrl.protocol === 'https:' && !apiUrl.username && !apiUrl.password) aiSiteApiBase = apiUrl.origin;
-                }
-            }
-        } catch (e) { /* local/offline copies may not include the public site config */ }
-        const res = await fetch(aiSiteApi('/api/ai/config'), {cache: 'no-store'});
-        if (!res.ok || !res.headers.get('Content-Type')?.includes('application/json')) return;
-        const config = await res.json();
-        if (!config || config.geminiAvailable !== true) return;
+            const response = await fetch(new URL('./ai-config.json', location.href), {cache: 'no-store'});
+            if (response.ok) settings = await response.json()
+        } catch (e) { /* offline copy: no public site config */ }
+        if (settings && typeof settings.model === 'string' && /^[A-Za-z0-9._-]+$/.test(settings.model)) {
+            aiSiteConfiguredModel = settings.model.replace(/^models\//, '')
+        }
+        if (settings && typeof settings.apiBase === 'string' && settings.apiBase.trim()) {
+            const apiUrl = new URL(settings.apiBase.trim());
+            if (apiUrl.protocol === 'https:' && !apiUrl.username && !apiUrl.password) aiSiteApiBase = apiUrl.origin
+        }
+        // A broken/missing config fetch must not silently make the public Pages site look like local-only mode.
+        if (!aiSiteApiBase && location.hostname === 'projectaaj2025-sys.github.io') {
+            aiSiteApiBase = 'https://statpracticum-ai.projectaaj2025.workers.dev'
+        }
+        if (!aiSiteApiBase) return;
+
         aiSiteAvailable = true;
         const s = aiSettings();
-        if (!s.aiKeySource && !s.aiApiKey && !s.aiEnabled) {
+        // On a device with no personal key, choose the site's shared Gemini service automatically.
+        if (!s.aiApiKey || s.aiKeySource === 'site') {
             s.aiKeySource = 'site';
             s.aiProvider = 'gemini';
             s.aiBaseUrl = aiProviderInfo('gemini').base;
-            s.aiModel = config.model || aiProviderInfo('gemini').models[0];
+            s.aiModel = aiSiteConfiguredModel;
             s.aiEnabled = true;
-            persist()
-        } else if (s.aiKeySource === 'site' && s.aiProvider === 'gemini' && config.model) {
-            s.aiModel = config.model;
             persist()
         }
         aiRefreshChrome();
-        if (route.id === 'ai') renderAI()
-    } catch (e) { /* offline or static site: keep personal-key mode */ }
+        if (route.id === 'ai') renderAI();
+
+        try {
+            const res = await fetch(aiSiteApi('/api/ai/config'), {cache: 'no-store'});
+            if (!res.ok) {
+                aiSiteDiagnostic = aiErrorReason(await aiFetchError(res));
+            } else if (!res.headers.get('Content-Type')?.includes('application/json')) {
+                aiSiteDiagnostic = ait('ai.err.network')
+            } else {
+                const config = await res.json();
+                if (!config || config.geminiAvailable !== true) {
+                    aiSiteDiagnostic = ait('ai.err.nokey')
+                } else {
+                    aiSiteDiagnostic = '';
+                    if (typeof config.model === 'string' && /^[A-Za-z0-9._-]+$/.test(config.model)) {
+                        aiSiteConfiguredModel = config.model.replace(/^models\//, '');
+                        const current = aiSettings();
+                        if (current.aiKeySource === 'site' && current.aiProvider === 'gemini') {
+                            current.aiModel = aiSiteConfiguredModel;
+                            persist()
+                        }
+                    }
+                }
+            }
+        } catch (error) {
+            aiSiteDiagnostic = ait('ai.err.network')
+        }
+        aiRefreshChrome();
+        if (route.id === 'ai') {
+            renderAI();
+            if (aiSiteDiagnostic) aiStatusLine(aiSiteDiagnostic, 'error')
+        }
+    } catch (e) { /* malformed public config: show local mode only when no endpoint is configured */ }
 }
 
 function aiSettings() {
@@ -6765,7 +6799,8 @@ function renderAI() {
     if (res) res.innerHTML = aiRenderGenerated(gen);
     aiRenderHistory();
     aiRenderStudio();
-    math($('main-content'))
+    math($('main-content'));
+    if (aiSiteDiagnostic) aiStatusLine(aiSiteDiagnostic, 'error')
 }
 
 /* Рендер сгенерированной задачи: условие, таблицы данных, варианты и решение. */
