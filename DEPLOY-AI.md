@@ -56,12 +56,9 @@
 
 ## 3. Опубликовать сайт на GitHub Pages
 
-Workflow `.github/workflows/pages.yml` собирает сайт: копирует `СтатПрактикум.html` в `index.html` и добавляет `ai-config.json`.
+Для публикации из ветки `main` в корне репозитория есть `index.html`: он перенаправляет посетителя на `СтатПрактикум.html`. Поэтому в **Settings → Pages → Build and deployment** оставьте **Deploy from a branch**, выберите ветку `main` и папку `/(root)`, затем нажмите **Save**. После слияния изменений Pages автоматически обновит сайт. Сам архив `.7z` GitHub Pages не распаковывает; извлечённый `СтатПрактикум.html` должен быть в репозитории.
 
-1. Проверьте, что извлечённый файл `СтатПрактикум.html` и добавленные файлы проекта включены в изменения. Сам архив `.7z` GitHub Pages не распаковывает.
-2. После слияния изменений в `main` откройте в репозитории **Settings → Pages** и выберите **GitHub Actions** как источник публикации.
-3. В **Actions** дождитесь успешного запуска workflow **Publish StatPracticum to GitHub Pages**.
-4. Откройте опубликованный адрес. Для этого репозитория адрес проекта обычно будет `https://projectaaj2025-sys.github.io/StatPracticum/`.
+Адрес проекта: `https://projectaaj2025-sys.github.io/StatPracticum/`.
 
 ## 4. Включить и проверить ИИ-наставника
 
