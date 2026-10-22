@@ -40,7 +40,7 @@ function checkRateLimit(request) {
 }
 
 function configuredModel(env) {
-  return (env.GEMINI_MODEL || 'gemini-2.5-flash').trim().replace(/^models\//, '');
+  return (env.GEMINI_MODEL || 'gemini-flash-lite-latest').trim().replace(/^models\//, '');
 }
 
 export default {

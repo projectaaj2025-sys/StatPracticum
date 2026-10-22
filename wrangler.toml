@@ -6,4 +6,4 @@ workers_dev = true
 [vars]
 # GitHub Pages project-site origin (the repository path is not part of the origin).
 ALLOWED_ORIGINS = "https://projectaaj2025-sys.github.io"
-GEMINI_MODEL = "gemini-2.5-flash"
+GEMINI_MODEL = "gemini-flash-lite-latest"
