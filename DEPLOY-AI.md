@@ -52,7 +52,7 @@
    Замените `<ваш-subdomain>` на настоящий адрес. Не добавляйте к URL `/api/ai` или завершающий слэш. URL публичный, ключа в нём нет.
 5. В `wrangler.toml` уже разрешён origin `https://projectaaj2025-sys.github.io`. Если фактический адрес Pages отличается, замените значение `ALLOWED_ORIGINS` на origin сайта (только схема и домен, без `/StatPracticum/`) и снова выполните `npx wrangler@latest deploy`.
 
-В Worker по умолчанию используется модель `gemini-2.5-flash`. Она настроена в `wrangler.toml` как `GEMINI_MODEL`; клиент и Worker должны использовать одну и ту же модель.
+Для сайта настроена модель `gemini-flash-lite-latest` — та же, что указана в настройках Gemini. Если Worker создавался через Cloudflare Dashboard, добавьте в **Production → Variables and Secrets** обычную переменную `GEMINI_MODEL` со значением `gemini-flash-lite-latest` (Secret выключен), чтобы браузер и Worker использовали одну модель.
 
 ## 3. Опубликовать сайт на GitHub Pages
 

@@ -4845,9 +4845,9 @@ const AI_TEXT = {
     'ai.setup.siteKey': {ru: 'Ключ сайта · Gemini', en: 'Site key · Gemini', kk: 'Сайт кілті · Gemini'},
     'ai.setup.ownKey': {ru: 'Мой ключ', en: 'My own key', kk: 'Менің кілтім'},
     'ai.setup.siteNote': {
-        ru: 'Ключ сайта хранится на сервере и работает с Gemini 2.5 Flash. Для своего ключа выберите «Мой ключ», затем сохраните настройки.',
-        en: 'The site key stays on the server and uses Gemini 2.5 Flash. To use your own, select “My own key” and save the settings.',
-        kk: 'Сайт кілті серверде сақталады және Gemini 2.5 Flash моделін қолданады. Өз кілтіңіз үшін «Менің кілтім» тармағын таңдап, параметрлерді сақтаңыз.'
+        ru: 'Ключ сайта хранится на сервере; модель Gemini настроена для сайта. Для своего ключа выберите «Мой ключ», затем сохраните настройки.',
+        en: 'The site key stays on the server; the Gemini model is configured for this site. To use your own, select “My own key” and save the settings.',
+        kk: 'Сайт кілті серверде сақталады; Gemini моделі сайт үшін бапталған. Өз кілтіңіз үшін «Менің кілтім» тармағын таңдап, параметрлерді сақтаңыз.'
     },
     'ai.setup.enabled': {ru: 'Использовать внешнюю модель', en: 'Use an external model', kk: 'Сыртқы модельді қолдану'},
     'ai.setup.stream': {ru: 'Показывать ответ по мере появления', en: 'Show the answer as it arrives', kk: 'Жауапты пайда болған сайын көрсету'},
@@ -5131,7 +5131,7 @@ const AI_PROVIDERS = [
     {
         id: 'gemini', name: 'Google AI Studio (Gemini)',
         base: 'https://generativelanguage.googleapis.com/v1beta',
-        models: ['gemini-2.5-flash'],
+        models: ['gemini-flash-lite-latest'],
         keyUrl: 'https://aistudio.google.com/apikey',
         docsUrl: 'https://ai.google.dev/gemini-api/docs/api-key',
         priceUrl: 'https://ai.google.dev/gemini-api/docs/pricing',
@@ -5686,7 +5686,7 @@ function aiErrorReason(error) {
     if (code === 401) return ait('ai.err.401');
     if (code === 402) return ait('ai.err.402');
     if (code === 403) return ait('ai.err.403');
-    if (code === 404) return ait('ai.err.404');
+    if (code === 404) return ait('ai.err.404') + (error && error.detail ? ' ' + error.detail : '');
     if (code === 429) return ait('ai.err.429');
     if (code === 'timeout') return ait('ai.err.timeout');
     if (code === 'stopped') return ait('ai.err.stopped');
